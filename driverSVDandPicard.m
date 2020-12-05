@@ -14,23 +14,18 @@ nVal   = 10000;
 dim1=size(Y,1);dim2=size(Y,2);dim3=size(Y,3);
 Y    = normalizeData(Y,dim1*dim2*dim3);
 
-save_option = false;
-
 %% Compare random feature model without regularization and with HyBR
 trial_no = 5;
-        
-m_list = [2^9,2^10,2^11];
-his = zeros(numel(m_list), trial_no);
-
+       
 % divide into training and validation data
 id = randperm(size(C,2));
 idt = id(1:nTrain);
 idv = id(nTrain+1:end);
-
 Yt  = reshape(Y(:,:,:,idt),dim1*dim2*dim3,[]); Ct = C(:,idt);
 Yv  = reshape(Y(:,:,:,idv),dim1*dim2*dim3,[]); Cv = C(:,idv);
 
-
+m_list = [2^9,2^10,2^11];
+his = zeros(numel(m_list), trial_no);
 
 sample = 'Sd';
 
@@ -42,10 +37,8 @@ for i_train = 1:size(m_list,2)
     sing_vec = zeros(1, rank_Z);
     ip_vec = zeros(1, rank_Z);
     ipnorm_vec = zeros(1, rank_Z);
-%     val_vec = zeros(3, trial_no);
 
     for j=1:trial_no
-        j
         switch sample
         case 'Sd'
             K = sampleSd(dim1*dim2*dim3,m-1);
@@ -65,22 +58,8 @@ for i_train = 1:size(m_list,2)
         ip_vec = ip_vec + abs(Ct(class_no,:)*V(:,1:rank_Z))/trial_no;
         ipnorm_vec = ipnorm_vec + (abs(Ct(class_no,:)*V(:,1:rank_Z)))./diagS(1:rank_Z)'/trial_no;
 
-%        for ii=1:rank_Z
-%           if abs(Ct(class_no,:)*V(:,ii))/diagS(ii)>1
-%               val_vec(1,j) = diagS(ii);
-%               val_vec(2,j) = abs(Ct(class_no,:)*V(:,ii));
-%               val_vec(3,j) = ii;
-%               break
-%           end
-%        end
-% 
-%        if val_vec(1,j)==0
-%           val_vec(1,j) = diagS(end) ;
-%           val_vec(2,j) = abs(Ct(class_no,:)*V(:,end));
-%           val_vec(3,j) = inf;
-%        end
-       WOpt = (Ct*V)*(S\U');
-       his(i_train,j) = norm(WOpt*Zv-Cv,'fro')^2/(2*size(Zv,2));
+        WOpt = (Ct*V)*(S\U');
+        his(i_train,j) = norm(WOpt*Zv-Cv,'fro')^2/(2*size(Zv,2));
     end
     figure(i_train)
     semilogy(sing_vec, 'LineWidth',1.5)
@@ -92,11 +71,5 @@ for i_train = 1:size(m_list,2)
     if i_train==1
         legend("\sigma_i","|c_{"+num2str(class_no)+",:}*v_i|","|c_{"+num2str(class_no)+",:}*v_i|/ \sigma_i",'fontsize', 7, 'Location', 'southeast')
     end
-    mean(his(i_train, :))
-
-    if save_option
-        axis tight
-        matlab2tikz(strcat('Picard_plot_CIFAR_m=',num2str(m),'.tex'),'width','\iwidth','height','\iheight')
-    end
-
+    fprintf("Average Test Error: %.2f, m=%d",mean(his(i_train,:)),num2str(m))
 end
