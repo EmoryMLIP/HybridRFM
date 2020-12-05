@@ -69,7 +69,7 @@ for k=1:numel(ms)
     
     [U,S,V] = svd(Zt, 'econ');
     diagS = diag(S);
-    phiS = @(alpha) diagS./(diagS.^2+alpha^2);
+    phiS = @(alpha) diagS./(diagS.^2+nTrain*alpha^2);
     WOpt = @(alpha) (Ct*V)*(phiS(alpha).*U');
     test_error = @(alpha) norm(WOpt(alpha)*Zv-Cv,'fro')^2/(2*size(Zv,2));
     train_error = @(alpha) norm(WOpt(alpha)*Zt-Ct,'fro')^2/(2*size(Zt,2));
