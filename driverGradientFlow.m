@@ -3,7 +3,6 @@
 % model using the MNIST/CIFAR dataset
 %
 
-
 % In this file, columns of his are training square error, testing square
 % error and norm of the weights, respectively.
 % clear all; 
@@ -11,17 +10,15 @@ close all;
 rng("default")
 rng(1)
 
+doPlot = true;
 nTrain = 2^10;
 nVal   = 10000;
-
-doPlot = true;
 
 if not(exist('dataset','var'))
     dataset = 'CIFAR10'; % 'MNIST' or 'CIFAR10';
 end
-sample = 'Sd';
 
-save_option = true;
+sample = 'Sd';
 
 if strcmp(dataset, 'MNIST')
     [Y,C] = setupMNIST(nTrain+nVal);
@@ -35,16 +32,13 @@ end
 dim1=size(Y,1);dim2=size(Y,2);dim3=size(Y,3);
 Y    = normalizeData(Y,dim1*dim2*dim3);
 
-
 id = randperm(size(C,2));
 idt = id(1:nTrain);
 idv = id(nTrain+1:end);
 Yt  = reshape(Y(:,:,:,idt),dim1*dim2*dim3,[]); Ct = C(:,idt);
 Yv  = reshape(Y(:,:,:,idv),dim1*dim2*dim3,[]); Cv = C(:,idv);
 
-
 ms  = 2.^(4:15);
-% ms = 2^10;
 his = zeros(numel(ms),2);
 tt = logspace(-8,8,100);
 ftest_all = zeros(numel(ms),numel(tt));
@@ -54,12 +48,10 @@ for k=1:numel(ms)
     m = ms(k);
     fprintf('%s : \t dataset=%s, \t m=%d\n',mfilename,dataset,m);
     
-    
     switch sample
         case 'Sd'
             K = sampleSd(dim1*dim2*dim3,m-1);
             b = sampleSd(m-1,1)';
-
         otherwise
             sample = 'uniform';
             K = 2*(rand(m-1,dim1*dim2*dim3)-0.5);
@@ -90,7 +82,7 @@ for k=1:numel(ms)
     
     if doPlot
        fig = figure(); clf;
-       fig.Name = sprintf('SD_%s,m-%d',dataset,m);
+       fig.Name = sprintf('GF_%s,m-%d',dataset,m);
        loglog(tt,ftest,'LineWidth',2,'DisplayName','test error')
        hold on;
        loglog(opt_alpha,opt_error,'.r','MarkerSize',30,'DisplayName','optimal')
@@ -106,4 +98,3 @@ for k=1:numel(ms)
 end
 
 save(sprintf('%s_%s_%s.mat',mfilename,dataset,sample),'his','ms','tt','ftest_all','ftrain_all')
-
