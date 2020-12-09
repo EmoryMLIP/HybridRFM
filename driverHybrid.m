@@ -23,13 +23,14 @@ end
 
 sample = 'Sd';
 
-if strcmp(dataset, 'MNIST')
-    [Y,C] = setupMNIST(nTrain+nVal);
-elseif strcmp(dataset, 'CIFAR10')
-    [Y,C] = setupCIFAR10(nTrain+nVal);
-else
-    warning('no such data!')
-    return
+switch dataset
+    case 'MNIST'
+        [Y,C] = setupMNIST(nTrain+nVal);
+    case 'CIFAR10'
+        [Y,C] = setupCIFAR10(nTrain+nVal);
+    otherwise
+        warning('no such data!')
+        return
 end
 
 dim1=size(Y,1);dim2=size(Y,2);dim3=size(Y,3);
@@ -62,29 +63,27 @@ for k=1:numel(ms)
     Zt = [max(K*Yt+b,0); ones(1,size(Yt,2))];
     Zv = [max(K*Yv+b,0); ones(1,size(Yv,2))];
     
-    WOpt = zeros(size(Ct,1),m);
-    
-    for i=1:numel(MaxIter_list)
-        if MaxIter_list(i)>m
-            break
-        end
-        fprintf('%s\tdataset=%s, \t m=%d, maxiter=%d\n',mfilename,dataset,m,MaxIter_list(i));
-        
-        for j = 1:size(Ct,1)
-            options.MaxIter=MaxIter_list(i);
-            options.RegParam = 'gcv';
-            options.NoStop = 'on';
-            options.Reorth = 'on';
-            options.IterBar = 'off';
-            [wHyBR, info] = IRhybrid_lsqr(Zt', Ct(j,:)', options);
-            WOpt(j,:) = wHyBR;
-            INFO{i,k,j} = info;
-        end
-        
-        his(i,k,1) = norm(WOpt*Zt-Ct,'fro')^2/(2*size(Zt,2));
-        his(i,k,2) = norm(WOpt*Zv-Cv,'fro')^2/(2*size(Zv,2));
-        his(i,k,3) = norm(WOpt,'fro');
+    MaxIter_idx = find(MaxIter_list<=m);
+    MaxIter = MaxIter_list(MaxIter_idx);
+    WOpt = zeros(size(Ct,1),m,numel(MaxIter));
+    fprintf('%s\tdataset=%s, \t m=%d, maxiter=%d\n',mfilename,dataset,m,MaxIter(end));
+
+    for j = 1:size(Ct,1)
+        options.RegParam = 'gcv';
+        options.NoStop = 'on';
+        options.Reorth = 'on';
+        options.IterBar = 'off';
+        [wHyBR, info] = IRhybrid_lsqr(Zt', Ct(j,:)', MaxIter, options);
+        WOpt(j,:,:) = wHyBR;
+        INFO{k,j} = info;
     end
+
+    for i=1:numel(MaxIter)
+        his(i,k,1) = norm(WOpt(:,:,i)*Zt-Ct,'fro')^2/(2*size(Zt,2));
+        his(i,k,2) = norm(WOpt(:,:,i)*Zv-Cv,'fro')^2/(2*size(Zv,2));
+        his(i,k,3) = norm(WOpt(:,:,i),'fro');
+    end
+       
 end
 
 save(sprintf('%s_%s_%s.mat',mfilename,dataset,sample),'his','ms','MaxIter_list','INFO')
@@ -100,8 +99,6 @@ for i=1:numel(MaxIter_list)
     xticks(ms)
     xticklabels(split(num2str(log2(ms))))
 end
-% set(gca, 'YScale', 'log')
-% set(gca, 'XScale', 'log')
 yL = get(gca,'YLim');
 legend('Location', 'southwest')
 
