@@ -20,13 +20,14 @@ end
 
 sample = 'Sd';
 
-if strcmp(dataset, 'MNIST')
-    [Y,C] = setupMNIST(nTrain+nVal);
-elseif strcmp(dataset, 'CIFAR10')
-    [Y,C] = setupCIFAR10(nTrain+nVal);
-else
-    warning('no such data!')
-    return
+switch dataset
+    case 'MNIST'
+        [Y,C] = setupMNIST(nTrain+nVal);
+    case 'CIFAR10'
+        [Y,C] = setupCIFAR10(nTrain+nVal);
+    otherwise
+        warning('no such data!')
+        return
 end
 
 dim1=size(Y,1);dim2=size(Y,2);dim3=size(Y,3);
