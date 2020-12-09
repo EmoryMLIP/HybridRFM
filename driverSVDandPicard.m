@@ -17,7 +17,6 @@ Y    = normalizeData(Y,dim1*dim2*dim3);
 %% Compare random feature model without regularization and with HyBR
 trial_no = 5;
        
-% divide into training and validation data
 id = randperm(size(C,2));
 idt = id(1:nTrain);
 idv = id(nTrain+1:end);
