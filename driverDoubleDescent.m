@@ -92,3 +92,5 @@ set(gca, 'XScale', 'log')
 yL = get(gca,'YLim');
 
 loglog([nTrain;nTrain],yL,'-.k','LineWidth',1,'DisplayName','Number of Examples');
+
+save(sprintf('%s_%s_%s.mat',mfilename,dataset,sample),'his','ms')
