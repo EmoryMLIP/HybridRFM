@@ -10,4 +10,5 @@ for k=1:numel(datasets)
 	driverGradientFlow;
 	driverWeightDecay;
 	driverHybrid;
+    driverDoubleDescent;
 end
