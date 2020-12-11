@@ -14,6 +14,7 @@ close all;
 rng("default")
 rng(1)
 
+doPlot = true;
 nTrain = 2^10;
 nVal   = 10000;
 
@@ -88,18 +89,20 @@ end
 
 save(sprintf('%s_%s_%s.mat',mfilename,dataset,sample),'his','ms','MaxIter_list','INFO')
 
-figure
-hold on
-for i=1:numel(MaxIter_list)
-    loglog(ms(i:end),his(i,i:end,2),'linewidth',2,'MarkerSize',10,'Marker','x','DisplayName',strcat('test loss iter=',num2str(MaxIter_list(i))))
-    
-    title(sprintf(strcat('Test error for hybrid', dataset ,' data, n=%d'), nTrain))
-    ylabel('Test Error', "FontSize", 20)
-    xlabel('m, in 2^x',"FontSize", 20)
-    xticks(ms)
-    xticklabels(split(num2str(log2(ms))))
-end
-yL = get(gca,'YLim');
-legend('Location', 'southwest')
+if doPlot
+    figure
+    hold on
+    for i=1:numel(MaxIter_list)
+        loglog(ms(i:end),his(i,i:end,2),'linewidth',2,'MarkerSize',10,'Marker','x','DisplayName',strcat('test loss iter=',num2str(MaxIter_list(i))))
 
-loglog([nTrain;nTrain],yL,'-.k','LineWidth',1,'DisplayName','Number of Examples');
+        title(sprintf(strcat('Test error for hybrid', dataset ,' data, n=%d'), nTrain))
+        ylabel('Test Error', "FontSize", 20)
+        xlabel('m, in 2^x',"FontSize", 20)
+        xticks(ms)
+        xticklabels(split(num2str(log2(ms))))
+    end
+    yL = get(gca,'YLim');
+    legend('Location', 'southwest')
+
+    loglog([nTrain;nTrain],yL,'-.k','LineWidth',1,'DisplayName','Number of Examples');
+end
