@@ -28,9 +28,9 @@ his = zeros(numel(m_list), trial_no);
 
 sample = 'Sd';
 
-for i_train = 1:size(m_list,2)
+for i = 1:size(m_list,2)
     
-    m = m_list(i_train);
+    m = m_list(i);
     class_no = 1;
     rank_Z = min(m,nTrain);
     sing_vec = zeros(1, rank_Z);
@@ -58,17 +58,19 @@ for i_train = 1:size(m_list,2)
         ipnorm_vec = ipnorm_vec + (abs(Ct(class_no,:)*V(:,1:rank_Z)))./diagS(1:rank_Z)'/trial_no;
 
         WOpt = (Ct*V)*(S\U');
-        his(i_train,j) = norm(WOpt*Zv-Cv,'fro')^2/(2*size(Zv,2));
+        his(i,j) = norm(WOpt*Zv-Cv,'fro')^2/(2*size(Zv,2));
     end
-    figure(i_train)
+    figure(i)
     semilogy(sing_vec, 'LineWidth',1.5)
     hold on 
 
     semilogy(ip_vec, 'LineWidth',1.5)
     semilogy(ipnorm_vec, 'LineWidth',1.5)
     title(strcat("picard, m=",num2str(m)))
-    if i_train==1
+    if i==1
         legend("\sigma_i","|c_{"+num2str(class_no)+",:}*v_i|","|c_{"+num2str(class_no)+",:}*v_i|/ \sigma_i",'fontsize', 7, 'Location', 'southeast')
     end
-    fprintf("Average Test Error: %.2f, m=%d",mean(his(i_train,:)),num2str(m))
+    fprintf("Average Test Error: %.2f, m=%d \n",mean(his(i,:)),m)
+    savename = strcat('Picard_m=',num2str(m),'.png');
+    saveas(figure(i), savename)
 end
